@@ -1,10 +1,11 @@
 'use strict';
 
 const chai = require(`chai`)
-    , chaiHttp = require(`chai-http`);
+    , chaiHttp = require(`chai-http`)
+;
 chai.use(chaiHttp);
 
-const server = require('../src/server/index');
+const server = require('../../src/server/index');
 
 describe('routes : index', () => {
 

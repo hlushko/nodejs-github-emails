@@ -1,3 +1,7 @@
 {
-  "sentryDsn": "$SENTRY_DSN"
+  "userPasswordSaltRounds": 10
+  , "userTokenSecret": "D@fJJ#Vp4dmS7jfUfwFGLu4sZoNE1*%T"
+  , "userTokenExpiresIn": 86400
+  , "userAvatarThumbWidth": 320
+  , "userAvatarThumbHeight": 240
 }

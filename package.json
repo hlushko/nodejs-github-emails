@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "description": "Test project at Node.js to send emails to GitHub users",
   "scripts": {
-    "test": "NODE_ENV=test NODE_PATH=$PWD mocha --recursive -r chai/register-should",
+    "test": "NODE_ENV=test NODE_PATH=$PWD mocha --recursive -r chai/register-should -r test/prepare/mongo --exit",
     "start": "NODE_ENV=dev NODE_PATH=$PWD node t.js",
-    "bot": "NODE_ENV=dev NODE_PATH=$PWD node bot.js"
+    "server": "NODE_ENV=prod NODE_PATH=$PWD node src/server/index.js"
   },
   "repository": {
     "type": "git",
@@ -20,19 +20,25 @@
   "dependencies": {
     "koa": "^2.7.0",
     "koa-router": "^7.4.0",
-    "koa-bodyparser": "^4.2.1",
+    "koa-body": "^4.0.7",
     "@sentry/node": "^4.5.2",
-    "mongodb": "^3.1.12",
+    "mongoose": "^5.4.10",
+    "cloudinary": "^1.13.2",
     "sprintf-js": "^1.1.2",
-    "hash.js": "^1.1.7"
+    "bcrypt": "^3.0.3",
+    "jsonwebtoken": "^8.4.0",
+    "better-validator": "^2.1.8"
   },
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-http": "^4.2.1",
     "faker": "^4.1.0",
     "mocha": "^5.2.0",
+    "mocha-prepare": "^0.1.0",
     "mock-require": "^3.0.3",
-    "sinon": "^7.2.2"
+    "sinon": "^7.2.2",
+    "mongo-unit": "^1.4.4",
+    "sync-request": "^6.0.0"
   },
   "engines": {
     "node": "10.x"
