@@ -1,6 +1,104 @@
 [
   {
     "type": "post",
+    "url": "/github-emails",
+    "title": "Sends email message to specified GitHub users",
+    "name": "GitHubEmails",
+    "group": "GitHub",
+    "permission": [
+      {
+        "name": "user"
+      }
+    ],
+    "header": {
+      "fields": {
+        "Header": [
+          {
+            "group": "Header",
+            "type": "String",
+            "optional": false,
+            "field": "x-access-token",
+            "description": "<p>Token to authenticate user</p>"
+          }
+        ]
+      }
+    },
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "String[]",
+            "optional": false,
+            "field": "username",
+            "description": "<p>List of GitHub username</p>"
+          },
+          {
+            "group": "Parameter",
+            "type": "String",
+            "optional": false,
+            "field": "message",
+            "description": "<p>Message to send</p>"
+          }
+        ]
+      }
+    },
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "String",
+            "optional": false,
+            "field": "status",
+            "description": "<p>Result of performing request</p>"
+          },
+          {
+            "group": "Success 200",
+            "type": "Number",
+            "optional": false,
+            "field": "number",
+            "description": "<p>Number of sent emails</p>"
+          }
+        ]
+      }
+    },
+    "error": {
+      "fields": {
+        "Error 4xx": [
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "BadRequest",
+            "description": "<p>If some data was not provided or has wrong value</p>"
+          },
+          {
+            "group": "Error 4xx",
+            "optional": false,
+            "field": "Unauthorized",
+            "description": "<p>If provided access token expired or wrong</p>"
+          }
+        ]
+      },
+      "examples": [
+        {
+          "title": "Response (example):",
+          "content": "HTTP/1.1 401 Unauthorized\n{\n  \"status\": \"error\",\n  \"message\": \"You have no access rights to perform current action.\"\n}",
+          "type": "json"
+        }
+      ]
+    },
+    "version": "0.0.0",
+    "filename": "src/server/controllers/GithubEmailsController.js",
+    "groupTitle": "GitHub",
+    "sampleRequest": [
+      {
+        "url": "https://api.github.com/v1/github-emails"
+      }
+    ]
+  },
+  {
+    "type": "post",
     "url": "/sign-in",
     "title": "Login existing user by email and password",
     "name": "SignIn",

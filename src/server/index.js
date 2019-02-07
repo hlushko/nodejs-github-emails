@@ -11,6 +11,8 @@ const app = new Koa()
     , PORT = process.env.PORT || 1337
 ;
 
+// TODO: add check for all required env variables for project
+
 if (process.env.SENTRY_DSN && process.env.NODE_ENV !== `test`) {
     // error tracking tool
     Sentry.init({ dsn: process.env.SENTRY_DSN });

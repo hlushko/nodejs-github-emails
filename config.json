@@ -4,4 +4,6 @@
   , "userTokenExpiresIn": 86400
   , "userAvatarThumbWidth": 320
   , "userAvatarThumbHeight": 240
+  , "mailFrom": "Serhii <serapheem013@gmail.com>"
+  , "mailSubject": "Hi GitHub user. Weather tips in sign"
 }
