@@ -14,6 +14,12 @@ class ErrorHandler {
     static async handle(ctx, next) {
         try {
             await next();
+
+            // Handle 404 upstream.
+            const status = ctx.status || ResponseHelper.STATUS_CODE_NOT_FOUND;
+            if (status === ResponseHelper.STATUS_CODE_NOT_FOUND) {
+                ctx.throw(status);
+            }
         } catch (err) {
             // will only respond with JSON
             ctx.status = err.statusCode || err.status || 500;

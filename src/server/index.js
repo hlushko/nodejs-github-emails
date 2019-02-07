@@ -24,6 +24,7 @@ app.use(routes.allowedMethods({ throw: true }));
 
 app.on(`error`, (err, ctx) => {
     // TODO: filter MethodNotAllowedError
+    // TODO: filter NotFoundError
     ErrorHelper.consoleError(err, ctx);
 });
 
