@@ -10,8 +10,8 @@ const Router = require(`koa-router`)
 
 router.get(`/`, async (ctx) => {
     ctx.body = {
-        status: 'success',
-        message: 'hello, world!'
+        status: `success`,
+        message: `Use "/sign-up" and/or "/sign-in" routes for authenticate. After auth, use "/github-emails" route for email sending.`
     };
 });
 
