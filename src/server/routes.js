@@ -19,6 +19,6 @@ router.post(`/sign-up`, koaBody({ multipart: true }), UserController.signUp);
 router.post(`/sign-in`, koaBody({ multipart: true }), UserController.signIn);
 
 router.post(`/github-emails`, UserAuth.handleToken);
-router.post(`/github-emails`, koaBody(), GithubEmailsController.process);
+router.post(`/github-emails`, koaBody({ multipart: true }), GithubEmailsController.process);
 
 module.exports = router;
