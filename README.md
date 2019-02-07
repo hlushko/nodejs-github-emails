@@ -2,7 +2,7 @@
 
 Test project with SignIn, SignUp and sending emails logic.
 
-Project can be found by [this link](https://nodejs-github-emails.herokuapp.com/github-emails)
+Project can be found by [this link](https://nodejs-github-emails.herokuapp.com/)
 
 To setUp project locally you can use [nodejs-github-emails-docker](https://github.com/hlushko/nodejs-github-emails-docker) repository.
 
