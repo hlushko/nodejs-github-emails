@@ -6,20 +6,17 @@ const chai = require(`chai`)
     , { sprintf } = require(`sprintf-js`)
     , mongoUnit = require(`mongo-unit`)
     , faker = require(`faker`)
-    , request = require(`sync-request`)
 ;
 chai.use(chaiHttp);
 
 const server = require(`../../src/server/index`)
     , ResponseHelper = require(`../../src/server/helpers/ResponseHelper`)
     , AuthHelper = require(`../../src/server/helpers/AuthHelper`)
-    , AvatarHelper = require(`../../src/server/helpers/AvatarHelper`)
-    , UserModel = require(`../../src/server/models/UserModel`)
-    , routeUnderTest = `/sign-up`
+    , routeUnderTest = `/sign-in`
     , jsonContentType = `application/json`
 ;
 
-describe(`Checks SignUp process`, () => {
+describe(`Checks SignIn process`, () => {
 
     before(() => {
         // load test data if needed
@@ -53,22 +50,22 @@ describe(`Checks SignUp process`, () => {
             data: ``
             , statusCode: ResponseHelper.STATUS_CODE_BAD_REQUEST
             , statusMessage: ResponseHelper.STATUS_ERROR
-            , errorMessageInclude: [`email`, `password`, `avatar`]
+            , errorMessageInclude: [`email`, `password`]
         }
         , "should return 400 if \"email\" not provided": {
-            data: { password: `any`, avatar: `any` }
+            data: { password: `any` }
             , statusCode: ResponseHelper.STATUS_CODE_BAD_REQUEST
             , statusMessage: ResponseHelper.STATUS_ERROR
             , errorMessageInclude: [`email`]
         }
         , "should return 400 if \"password\" not provided": {
-            data: { email: `any@any.com`, avatar: `any` }
+            data: { email: `any@any.com` }
             , statusCode: ResponseHelper.STATUS_CODE_BAD_REQUEST
             , statusMessage: ResponseHelper.STATUS_ERROR
             , errorMessageInclude: [`password`]
         }
         , "should return 400 if \"email\" is wrong email address": {
-            data: { email: `any`, password: `any`, avatar: `any` }
+            data: { email: `any`, password: `any` }
             , statusCode: ResponseHelper.STATUS_CODE_BAD_REQUEST
             , statusMessage: ResponseHelper.STATUS_ERROR
             , errorMessageInclude: [`email`]
@@ -162,33 +159,33 @@ describe(`Checks SignUp process`, () => {
             });
     });
 
-    it(`should register new user`, () => {
+    it(`should SignIn successfully`, async () => {
         // given
-        const signUpData = {
+        const signInData = {
             email: faker.internet.email()
             , password: faker.internet.password()
         };
-        const avatarUrl = faker.image.avatar()
-            , avatarName = avatarUrl.split(`/`).pop()
-            , uploadedOriginUrl = faker.image.avatar()
+        const uploadedOriginUrl = faker.image.avatar()
             , uploadedThumbUrl = faker.image.avatar()
         ;
-        const mockAvatarHelper = sandbox.mock(AvatarHelper);
-        mockAvatarHelper.expects(`upload`).once()
-            .withArgs(sandbox.match(path => {
-                path.should.contain(`/tmp/upload_`);
 
-                return true;
-            }))
-            .resolves({ origin: uploadedOriginUrl, thumb: uploadedThumbUrl })
-        ;
+        // load fixtures
+        await mongoUnit.drop();
+        await mongoUnit.load({
+            users: [
+                {
+                    email: signInData.email.toLowerCase()
+                    , passwordHash: await AuthHelper.hash(signInData.password)
+                    , avatarOriginUrl: uploadedOriginUrl
+                    , avatarThumbUrl: uploadedThumbUrl
+                }
+            ]
+        });
 
         // when
         return chai.request(server)
             .post(routeUnderTest)
-            .field(`email`, signUpData.email)
-            .field(`password`, signUpData.password)
-            .attach(`avatar`, request(`GET`, avatarUrl).getBody(), avatarName)
+            .send(signInData)
             .then(res => {
                 res.status.should.eql(
                     ResponseHelper.STATUS_CODE_OK
@@ -197,134 +194,101 @@ describe(`Checks SignUp process`, () => {
                 res.type.should.eql(jsonContentType);
                 res.body.should.have.property(`status`, ResponseHelper.STATUS_SUCCESS);
                 res.body.should.have.property(`token`);
+                res.body.should.have.property(`email`, signInData.email.toLowerCase());
                 res.body.should.have.property(`avatarUrl`, uploadedThumbUrl);
+                res.body.should.have.property(`originAvatarUrl`, uploadedOriginUrl);
 
-                mockAvatarHelper.verify();
-
-                return Promise.all([
-                    AuthHelper.verifyToken(res.body.token)
-                    , UserModel.findOne({ email: signUpData.email })
-                ]);
+                return AuthHelper.verifyToken(res.body.token);
             })
-            .then(results => {
-                results[0].should.equal(
-                    signUpData.email
+            .then(decodedToken => {
+                decodedToken.should.equal(
+                    signInData.email
                     , `Token should be decoded to user email address.`
-                );
-
-                results[1].should.have.property(
-                    `email`
-                    , signUpData.email.toLowerCase()
-                    , `User "email" should be stored in Db.`
-                );
-                results[1].should.have.property(`passwordHash`);
-                results[1].should.have.property(
-                    `avatarOriginUrl`
-                    , uploadedOriginUrl
-                    , `User "avatarOriginUrl" should be stored in Db.`
-                );
-                results[1].should.have.property(
-                    `avatarThumbUrl`
-                    , uploadedThumbUrl
-                    , `User "avatarThumbUrl" should be stored in Db.`
-                );
-
-                return AuthHelper.compare(
-                    signUpData.password
-                    , results[1].passwordHash
-                );
-            })
-            .then(compareResult => {
-                compareResult.should.equal(
-                    true
-                    , `Right password hash should be stored in Db.`
                 );
             })
         ;
     });
 
-    it(`should return 400 error if user already registered`, async () => {
+    it(`should not SignIn with wrong pass`, async () => {
         // given
-        const signUpData = {
+        const signInData = {
             email: faker.internet.email()
             , password: faker.internet.password()
         };
-        const avatarUrl = faker.image.avatar()
-            , avatarName = avatarUrl.split(`/`).pop()
-            , uploadedOriginUrl = faker.image.avatar()
+        const uploadedOriginUrl = faker.image.avatar()
             , uploadedThumbUrl = faker.image.avatar()
-            , passwordHash = `any`
         ;
 
+        // load fixtures
+        await mongoUnit.drop();
         await mongoUnit.load({
             users: [
                 {
-                    email: signUpData.email.toLowerCase()
-                    , passwordHash: passwordHash
+                    email: signInData.email.toLowerCase()
+                    , passwordHash: faker.random.alphaNumeric(32)
                     , avatarOriginUrl: uploadedOriginUrl
                     , avatarThumbUrl: uploadedThumbUrl
                 }
             ]
         });
 
-        const mockAvatarHelper = sandbox.mock(AvatarHelper);
-        mockAvatarHelper.expects(`upload`).never();
+        // when
+        return chai.request(server)
+            .post(routeUnderTest)
+            .send(signInData)
+            .then(res => {
+                res.status.should.eql(
+                    ResponseHelper.STATUS_CODE_BAD_REQUEST
+                    , `400 status code should be returned. Body: ` + JSON.stringify(res.body)
+                );
+                res.type.should.eql(jsonContentType);
+                res.body.should.have.property(`status`, ResponseHelper.STATUS_ERROR);
+
+                res.body.should.have.property(`message`);
+                res.body.message.should.contain(`email`);
+                res.body.message.should.contain(`password`);
+
+                res.body.should.not.have.property(`token`);
+                res.body.should.not.have.property(`email`);
+                res.body.should.not.have.property(`avatarUrl`);
+                res.body.should.not.have.property(`originAvatarUrl`);
+            });
+    });
+
+    it(`should not SignIn with non existing email`, async () => {
+        // given
+        const signInData = {
+            email: faker.internet.email()
+            , password: faker.internet.password()
+        };
+
+        // load fixtures
+        await mongoUnit.drop();
 
         // when
         return chai.request(server)
             .post(routeUnderTest)
-            .field(`email`, signUpData.email)
-            .field(`password`, signUpData.password)
-            .attach(`avatar`, request(`GET`, avatarUrl).getBody(), avatarName)
+            .send(signInData)
             .then(res => {
                 res.status.should.eql(
                     ResponseHelper.STATUS_CODE_BAD_REQUEST
-                    , `Bad Request response should be returned. Body: ` + JSON.stringify(res.body)
+                    , `400 status code should be returned. Body: ` + JSON.stringify(res.body)
                 );
                 res.type.should.eql(jsonContentType);
                 res.body.should.have.property(`status`, ResponseHelper.STATUS_ERROR);
+
                 res.body.should.have.property(`message`);
-                res.body.message.should.contain(
-                    `email`
-                    , `Error message should contain "email" keyword.`
-                );
+                res.body.message.should.contain(`email`);
+                res.body.message.should.contain(`password`);
 
-                mockAvatarHelper.verify();
-
-                return UserModel.findOne({ email: signUpData.email });
-            })
-            .then(userModelData => {
-                should.exist(
-                    userModelData
-                    , sprintf(`User with email: "%s" should exists.`, signUpData.email)
-                );
-
-                userModelData.should.have.property(
-                    `email`
-                    , signUpData.email.toLowerCase()
-                    , `User "email" should not be changed in Db.`
-                );
-                userModelData.should.have.property(
-                    `passwordHash`
-                    , passwordHash
-                    , `User "passwordHash" should not be changed in Db.`
-                );
-                userModelData.should.have.property(
-                    `avatarOriginUrl`
-                    , uploadedOriginUrl
-                    , `User "avatarOriginUrl" should not be changed in Db.`
-                );
-                userModelData.should.have.property(
-                    `avatarThumbUrl`
-                    , uploadedThumbUrl
-                    , `User "avatarThumbUrl" should not be changed in Db.`
-                );
+                res.body.should.not.have.property(`token`);
+                res.body.should.not.have.property(`email`);
+                res.body.should.not.have.property(`avatarUrl`);
+                res.body.should.not.have.property(`originAvatarUrl`);
             });
     });
 
-    // TODO : add test for wrong file type sending
-    // TODO : add test for fail avatar upload
-    // TODO : add test for fail password hash generation
-    // TODO : add test for fail access token generation
+    // TODO : add test for fail password hash compare
+    // TODO : add test for fail access token verify
 
 });

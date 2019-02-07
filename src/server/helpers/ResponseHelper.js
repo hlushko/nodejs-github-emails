@@ -1,5 +1,7 @@
 'use strict';
 
+const { sprintf } = require(`sprintf-js`);
+
 /**
  * @property {string} STATUS_SUCCESS
  * @property {string} STATUS_ERROR
@@ -8,6 +10,23 @@
  * @property {number} STATUS_CODE_METHOD_NOT_ALLOWED
  */
 class ResponseHelper {
+
+    /**
+     * Builds response if validation errors appeared
+     * @param {Object} ctx
+     * @param {Object} errors
+     */
+    static buildValidationErrorResponse(ctx, errors) {
+        ctx.status = this.STATUS_CODE_BAD_REQUEST;
+        ctx.body = {
+            status: this.STATUS_ERROR
+            , message: sprintf(
+                `Validation error(s) with parameters "%s" appeared.` // TODO: move message to separate space ?
+                , Object.keys(errors).join(`, `)
+            )
+            , errors: errors
+        };
+    }
 }
 
 ResponseHelper.STATUS_SUCCESS = `success`;

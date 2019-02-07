@@ -1,12 +1,13 @@
 'use strict';
 
-const { sprintf } = require(`sprintf-js`)
-    , SignUpValidator = require(`../validators/SignUpValidator`)
+const SignUpValidator = require(`../validators/SignUpValidator`)
+    , SignInValidator = require(`../validators/SignInValidator`)
     , ResponseHelper = require(`../helpers/ResponseHelper`)
     , AuthHelper = require(`../helpers/AuthHelper`)
     , AvatarHelper = require(`../helpers/AvatarHelper`)
     , UserModel = require(`../models/UserModel`)
     , validationErrorName = `ValidationError`
+    , signInWrongCredentialsErrorMessage = `Provided "email" and "password" combination was not found.`// TODO: store message in other place
 ;
 
 class UserController {
@@ -20,18 +21,10 @@ class UserController {
     static async signUp(ctx) {
         const validationErrors = SignUpValidator.run(ctx.request);
         if (validationErrors) {
-            ctx.status = ResponseHelper.STATUS_CODE_BAD_REQUEST;
-            ctx.body = {
-                status: ResponseHelper.STATUS_ERROR
-                , message: sprintf(
-                    // TODO: move message to separate space
-                    `Validation error(s) with parameters "%s" appeared during SignUp process.`
-                    , Object.keys(validationErrors).join(`, `)
-                )
-                , errors: validationErrors
-            };
-
-            return;
+            return ResponseHelper.buildValidationErrorResponse(
+                ctx
+                , validationErrors
+            );
         }
 
         return UserModel.findOne({ email: ctx.request.body.email })
@@ -75,16 +68,10 @@ class UserController {
             })
             .catch(err => {
                 if (err.name === validationErrorName) {
-                    ctx.status = ResponseHelper.STATUS_CODE_BAD_REQUEST;
-                    ctx.body = {
-                        status: ResponseHelper.STATUS_ERROR
-                        , message: sprintf(
-                            // TODO: move message to separate space
-                            `Validation error(s) with parameters "%s" appeared during SignUp process.`
-                            , Object.keys(err.errors).join(`, `)
-                        )
-                        , errors: err.errors
-                    };
+                    ResponseHelper.buildValidationErrorResponse(
+                        ctx
+                        , err.errors
+                    );
                 } else {
                     // TODO: handle hash generation error ?
                     // TODO: handle upload avatar error ?
@@ -96,8 +83,66 @@ class UserController {
             });
     }
 
+    /**
+     * Handles user SignIn process
+     * @param {Object} ctx Context of current request
+     *
+     * @return {Promise<void>}
+     */
     static async signIn(ctx) {
+        const validationErrors = SignInValidator.run(ctx.request);
+        if (validationErrors) {
+            return ResponseHelper.buildValidationErrorResponse(
+                ctx
+                , validationErrors
+            );
+        }
 
+        return UserModel.findOne({ email: ctx.request.body.email })
+            .then(userModelData => {
+                if (null === userModelData) {
+                    ctx.throw(
+                        ResponseHelper.STATUS_CODE_BAD_REQUEST
+                        , signInWrongCredentialsErrorMessage
+                    );
+                }
+
+                return Promise.all([
+                    userModelData
+                    , AuthHelper.compare(
+                        ctx.request.body.password
+                        , userModelData.passwordHash
+                    )
+                ]);
+            })
+            .then(results => {
+                if (false === results[1]) {
+                    ctx.throw(
+                        ResponseHelper.STATUS_CODE_BAD_REQUEST
+                        , signInWrongCredentialsErrorMessage
+                    );
+                }
+
+                return Promise.all([
+                    results[0]
+                    , AuthHelper.buildToken(ctx.request.body.email)
+                ]);
+            })
+            .then(results => {
+                ctx.body = {
+                    status: ResponseHelper.STATUS_SUCCESS
+                    , token: results[1]
+                    , email: results[0].email
+                    , avatarUrl: results[0].avatarThumbUrl
+                    , originAvatarUrl: results[0].avatarOriginUrl
+                };
+            })
+            .catch(err => {
+                // TODO: handle hash compare error ?
+                // TODO: handle build access token error ?
+
+                throw err;
+            });
     }
 }
 
