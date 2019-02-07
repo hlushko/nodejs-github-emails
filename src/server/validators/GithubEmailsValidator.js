@@ -16,9 +16,7 @@ class GithubEmailsValidator {
         const validator = new Validator();
 
         validator(request.body).required().isObject(obj => {
-            obj(`username`).required().isArray((item) => {
-                item.display(`username`).isString().required().notEmpty();
-            });
+            obj(`username`).required().isString().notEmpty();
             obj(`message`).required().isString().notEmpty();
         });
 

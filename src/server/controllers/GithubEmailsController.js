@@ -18,7 +18,7 @@ class GithubEmailsController {
      *
      * @apiHeader {String} x-access-token Token to authenticate user
      *
-     * @apiParam {String[]} username List of GitHub username
+     * @apiParam {String} username List of GitHub username separated by comma
      * @apiParam {String} message Message to send
      *
      * @apiSuccess {String} status Result of performing request
@@ -47,7 +47,12 @@ class GithubEmailsController {
             );
         }
 
-        return GitHubHelper.loadProfiles(ctx.request.body.username)
+        const usernameList = ctx.request.body.username.split(`,`)
+            .map(item => item.trim())
+            .filter(item => item)
+        ;
+
+        return GitHubHelper.loadProfiles(usernameList)
             .then(accounts => {
                 const accountsWithEmails = accounts.filter(el => el.email)
                     , locations = accountsWithEmails.filter(el => el.location)

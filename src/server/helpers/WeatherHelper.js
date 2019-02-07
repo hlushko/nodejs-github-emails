@@ -19,6 +19,10 @@ class WeatherHelper {
      * @return {Promise<Object>} Object where key - location, value - weather message
      */
     static async loadAndBuild(locations) {
+        if (0 === locations.length) {
+            return {};
+        }
+
         const uniqueLocations = [...new Set(locations)]
             , promises = []
             , thisClass = this

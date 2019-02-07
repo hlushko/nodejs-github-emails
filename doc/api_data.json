@@ -28,10 +28,10 @@
         "Parameter": [
           {
             "group": "Parameter",
-            "type": "String[]",
+            "type": "String",
             "optional": false,
             "field": "username",
-            "description": "<p>List of GitHub username</p>"
+            "description": "<p>List of GitHub username separated by comma</p>"
           },
           {
             "group": "Parameter",

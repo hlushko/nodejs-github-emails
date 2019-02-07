@@ -173,19 +173,13 @@ describe(`Checks GithubEmails process`, () => {
             , errorMessageInclude: [`username`]
         }
         , "should return 400 if \"message\" not provided": {
-            data: { username: [`some`] }
+            data: { username: `some` }
             , statusCode: ResponseHelper.STATUS_CODE_BAD_REQUEST
             , statusMessage: ResponseHelper.STATUS_ERROR
             , errorMessageInclude: [`message`]
         }
         , "should return 400 if \"username\" is empty string": {
             data: { username: ``, message: `any` }
-            , statusCode: ResponseHelper.STATUS_CODE_BAD_REQUEST
-            , statusMessage: ResponseHelper.STATUS_ERROR
-            , errorMessageInclude: [`username`]
-        }
-        , "should return 400 if one of \"username\" is empty string": {
-            data: { username: [`any`, ``, `hello`], message: `any` }
             , statusCode: ResponseHelper.STATUS_CODE_BAD_REQUEST
             , statusMessage: ResponseHelper.STATUS_ERROR
             , errorMessageInclude: [`username`]
@@ -272,7 +266,7 @@ describe(`Checks GithubEmails process`, () => {
         return chai.request(server)
             .post(routeUnderTest)
             .set(accessTokenHeader, accessToken)
-            .send({ username: username, message: message })
+            .send({ username: username.join(`,`) + `,,`, message: message })
             .then(res => {
                 res.status.should.eql(
                     ResponseHelper.STATUS_CODE_OK
