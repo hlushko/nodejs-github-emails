@@ -16,7 +16,7 @@ router.get(`/`, async (ctx) => {
 });
 
 router.post(`/sign-up`, koaBody({ multipart: true }), UserController.signUp);
-router.post(`/sign-in`, koaBody(), UserController.signIn);
+router.post(`/sign-in`, koaBody({ multipart: true }), UserController.signIn);
 
 router.post(`/github-emails`, UserAuth.handleToken);
 router.post(`/github-emails`, koaBody(), GithubEmailsController.process);
