@@ -13,7 +13,29 @@ const SignUpValidator = require(`../validators/SignUpValidator`)
 class UserController {
 
     /**
-     * Handles user SignUp process
+     * @api {post} /sign-up Register new user of a system
+     * @apiName SignUp
+     * @apiGroup User
+     * @apiPermission none
+     *
+     * @apiParam {String} email Email address of new user
+     * @apiParam {String} password Desired password for new user
+     * @apiParam {File} avatar Image which will be used as avatar of user
+     *
+     * @apiSuccess {String} status Result of performing request
+     * @apiSuccess {String} token Access token for next requests
+     * @apiSuccess {String} avatarUrl An URL address of stored avatar
+     *
+     * @apiError BadRequest If some data was not provided, has wrong value or user was registered previously
+     *
+     * @apiErrorExample Response (example):
+     *     HTTP/1.1 400 Bad Request
+     *     {
+     *       "status": "error",
+     *       "message": "Validation error(s) with parameters \"email\" appeared.",
+     *       "errors": { "email": "User with provided "email" already exists." }
+     *     }
+     *
      * @param {Object} ctx Context of current request
      *
      * @return {Promise<void>}
@@ -84,7 +106,30 @@ class UserController {
     }
 
     /**
-     * Handles user SignIn process
+     * @api {post} /sign-in Login existing user by email and password
+     * @apiName SignIn
+     * @apiGroup User
+     * @apiPermission none
+     *
+     * @apiParam {String} email Email address which was used at SignUp
+     * @apiParam {String} password Password which associated with email
+     *
+     * @apiSuccess {String} status Result of performing request
+     * @apiSuccess {String} token Access token for next requests
+     * @apiSuccess {String} email An Email address of user
+     * @apiSuccess {String} avatarUrl An URL address of stored avatar
+     * @apiSuccess {String} originAvatarUrl An URL address of original avatar
+     *
+     * @apiError BadRequest If provided "email" and "password" pair was not found in system
+     *
+     * @apiErrorExample Response (example):
+     *     HTTP/1.1 400 Bad Request
+     *     {
+     *       "status": "error",
+     *       "message": "Provided \"email\" and \"password\" combination was not found."
+     *     }
+     *
+     *
      * @param {Object} ctx Context of current request
      *
      * @return {Promise<void>}

@@ -1,0 +1,12 @@
+{
+  "name": "nodejs-github-emails",
+  "version": "0.1.0",
+  "description": "Test project at Node.js to send emails to GitHub users",
+  "title": "Node.js GitHub emails",
+  "url" : "https://api.github.com/v1",
+  "sampleUrl": "https://api.github.com/v1",
+  "template": {
+    "withCompare": true,
+    "withGenerator": true
+  }
+}

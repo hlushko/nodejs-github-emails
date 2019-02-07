@@ -1,0 +1,20 @@
+define({
+  "name": "nodejs-github-emails",
+  "version": "0.1.0",
+  "description": "Test project at Node.js to send emails to GitHub users",
+  "title": "Node.js GitHub emails",
+  "url": "https://api.github.com/v1",
+  "sampleUrl": "https://api.github.com/v1",
+  "template": {
+    "withCompare": true,
+    "withGenerator": true
+  },
+  "defaultVersion": "0.0.0",
+  "apidoc": "0.3.0",
+  "generator": {
+    "name": "apidoc",
+    "time": "2019-02-07T01:01:10.998Z",
+    "url": "http://apidocjs.com",
+    "version": "0.17.7"
+  }
+});
