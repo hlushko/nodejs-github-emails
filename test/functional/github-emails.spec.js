@@ -29,7 +29,7 @@ const server = require(`../../src/server/index`)
 
 let accessToken = null;
 
-describe.only(`Checks GithubEmails process`, () => {
+describe(`Checks GithubEmails process`, () => {
 
     before(() => {
         return mongoUnit.load({
