@@ -76,11 +76,10 @@ class WeatherHelper {
         console.log(weatherInfo.current);
 
         return sprintf(
-            `It's %s, %s %s degrees in %s`
+            `It's %s, %s %s degrees`
             , weatherInfo.current.skytext
             , weatherInfo.current.temperature
             , degreeType
-            , weatherInfo.current.observationpoint
         );
     }
 }
